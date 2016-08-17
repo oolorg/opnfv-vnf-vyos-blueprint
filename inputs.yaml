@@ -1,0 +1,13 @@
+keystone_username: admin
+keystone_password: admin
+keystone_tenant_name: admin
+keystone_url: 'http://192.168.104.104:5000/v2.0'
+region: RegionOne
+nova_url: ''
+neutron_url: ''
+external_network_name: admin_floating_net
+target_vnf_image_id: 4e964df4-890b-4fe9-bd3e-a2e0e04bdce1
+target_vnf_flavor_id: 3
+reference_vnf_image_id: 4e964df4-890b-4fe9-bd3e-a2e0e04bdce1
+reference_vnf_flavor_id: 3
+
