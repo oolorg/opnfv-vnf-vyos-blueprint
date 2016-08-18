@@ -49,6 +49,14 @@ inputs:
     type: string
     default: cfy_local_subnet
 
+  data_plane_network_name:
+    type: string
+    default: cfy_local_data_plane_network
+
+  data_plane_subnet_name:
+    type: string
+    default: cfy_local_data_plane_subnet
+
   target_vnf_port_name:
     type: string
     default: cfy_local_target_vnf_port
@@ -56,6 +64,14 @@ inputs:
   reference_vnf_port_name:
     type: string
     default: cfy_local_reference_vnf_port
+
+  target_vnf_data_plane_port_name:
+    type: string
+    default: cfy_local_target_vnf_data_plane_port
+
+  reference_vnf_data_plane_port_name:
+    type: string
+    default: cfy_local_reference_vnf_data_plane_port
 
   security_group_name:
     type: string
@@ -132,6 +148,8 @@ node_templates:
         type: cloudify.openstack.server_connected_to_floating_ip
       - target: target_vnf_port
         type: cloudify.openstack.server_connected_to_port
+      - target: target_vnf_data_plane_port
+        type: cloudify.openstack.server_connected_to_port
 
   reference_vnf_host:
     type: cloudify.openstack.nodes.Server
@@ -149,6 +167,8 @@ node_templates:
       - target: reference_vnf_ip
         type: cloudify.openstack.server_connected_to_floating_ip
       - target: reference_vnf_port
+        type: cloudify.openstack.server_connected_to_port
+      - target: reference_vnf_data_plane_port
         type: cloudify.openstack.server_connected_to_port
 
   keypair:
@@ -184,6 +204,31 @@ node_templates:
       - type: cloudify.openstack.port_connected_to_security_group
         target: security_group
 
+  target_vnf_data_plane_port:
+    type: cloudify.openstack.nodes.Port
+    properties:
+      openstack_config: *openstack_configuration
+      resource_id: { get_input: target_vnf_data_plane_port_name }
+    relationships:
+      - type: cloudify.relationships.contained_in
+        target: data_plane_network
+      - type: cloudify.relationships.depends_on
+        target: data_plane_subnet
+      - type: cloudify.openstack.port_connected_to_security_group
+        target: security_group
+
+  reference_vnf_data_plane_port:
+    type: cloudify.openstack.nodes.Port
+    properties:
+      openstack_config: *openstack_configuration
+      resource_id: { get_input: reference_vnf_data_plane_port_name }
+    relationships:
+      - type: cloudify.relationships.contained_in
+        target: data_plane_network
+      - type: cloudify.relationships.depends_on
+        target: data_plane_subnet
+      - type: cloudify.openstack.port_connected_to_security_group
+        target: security_group
 
   security_group:
     type: cloudify.openstack.nodes.SecurityGroup
@@ -214,6 +259,24 @@ node_templates:
     type: cloudify.openstack.nodes.Network
     properties:
       resource_id: { get_input: network_name }
+      openstack_config: *openstack_configuration
+
+  data_plane_subnet:
+    type: cloudify.openstack.nodes.Subnet
+    properties:
+      resource_id: { get_input: data_plane_subnet_name }
+      subnet:
+        ip_version: 4
+        cidr: 192.168.220.0/24
+      openstack_config: *openstack_configuration
+    relationships:
+      - target: data_plane_network
+        type: cloudify.relationships.contained_in
+
+  data_plane_network:
+    type: cloudify.openstack.nodes.Network
+    properties:
+      resource_id: { get_input: data_plane_network_name }
       openstack_config: *openstack_configuration
 
   router:
