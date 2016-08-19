@@ -144,8 +144,6 @@ node_templates:
     relationships:
       - target: keypair
         type: cloudify.openstack.server_connected_to_keypair
-      - target: target_vnf_ip
-        type: cloudify.openstack.server_connected_to_floating_ip
       - target: target_vnf_port
         type: cloudify.openstack.server_connected_to_port
       - target: target_vnf_data_plane_port
@@ -164,8 +162,6 @@ node_templates:
     relationships:
       - target: keypair
         type: cloudify.openstack.server_connected_to_keypair
-      - target: reference_vnf_ip
-        type: cloudify.openstack.server_connected_to_floating_ip
       - target: reference_vnf_port
         type: cloudify.openstack.server_connected_to_port
       - target: reference_vnf_data_plane_port
@@ -190,6 +186,8 @@ node_templates:
         target: subnet
       - type: cloudify.openstack.port_connected_to_security_group
         target: security_group
+      - target: target_vnf_ip
+        type: cloudify.openstack.port_connected_to_floating_ip
 
   reference_vnf_port:
     type: cloudify.openstack.nodes.Port
@@ -203,6 +201,8 @@ node_templates:
         target: subnet
       - type: cloudify.openstack.port_connected_to_security_group
         target: security_group
+      - target: reference_vnf_ip
+        type: cloudify.openstack.port_connected_to_floating_ip
 
   target_vnf_data_plane_port:
     type: cloudify.openstack.nodes.Port
