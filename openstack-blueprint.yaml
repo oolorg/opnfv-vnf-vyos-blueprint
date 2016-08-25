@@ -24,12 +24,6 @@ inputs:
   region:
     type: string
 
-  nova_url:
-    type: string
-
-  neutron_url:
-    type: string
-
   external_network_name:
     type: string
 
