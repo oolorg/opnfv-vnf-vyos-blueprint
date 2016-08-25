@@ -3,8 +3,6 @@ keystone_password: vnf_test
 keystone_tenant_name: vnf_test
 keystone_url: 'http://192.168.104.14:5000/v2.0'
 region: RegionOne
-nova_url: ''
-neutron_url: ''
 external_network_name: admin_floating_net
 target_vnf_image_id: 419b046a-4362-448f-a0a9-8dd3f9b18568
 target_vnf_flavor_id: 3
