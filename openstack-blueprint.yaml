@@ -29,55 +29,55 @@ inputs:
 
   router_name:
     type: string
-    default: cfy_local_router
+    default: vnf_test_router
 
-  network_name:
+  management_plane_network_name:
     type: string
-    default: cfy_local_network
+    default: management_plane_network
 
-  subnet_name:
+  management_plane_subnet_name:
     type: string
-    default: cfy_local_subnet
+    default: management_plane_subnet
 
   data_plane_network_name:
     type: string
-    default: cfy_local_data_plane_network
+    default: data_plane_network
 
   data_plane_subnet_name:
     type: string
-    default: cfy_local_data_plane_subnet
+    default: data_plane_subnet
 
   target_vnf_port_name:
     type: string
-    default: cfy_local_target_vnf_port
+    default: target_vnf_port
 
   reference_vnf_port_name:
     type: string
-    default: cfy_local_reference_vnf_port
+    default: reference_vnf_port
 
   target_vnf_data_plane_port_name:
     type: string
-    default: cfy_local_target_vnf_data_plane_port
+    default: target_vnf_data_plane_port
 
   reference_vnf_data_plane_port_name:
     type: string
-    default: cfy_local_reference_vnf_data_plane_port
+    default: reference_vnf_data_plane_port
 
   security_group_name:
     type: string
-    default: cfy_local_security_group
+    default: vnf_test_security_group
 
   keypair_name:
     type: string
-    default: cfy_local_keypair
+    default: vnf_test_keypair
 
   ssh_key_filename:
     type: string
-    default: ~/.ssh/cfy_local_keypair.pem
+    default: ~/.ssh/vnf_test_keypair.pem
 
   target_vnf_name:
     type: string
-    default: cfy_target_vnf
+    default: target_vnf
 
   target_vnf_image_id:
     type: string
@@ -87,7 +87,7 @@ inputs:
 
   reference_vnf_name:
     type: string
-    default: cfy_reference_vnf
+    default: reference_vnf
 
   reference_vnf_image_id:
     type: string
@@ -128,7 +128,7 @@ node_templates:
       server:
         image: { get_input: target_vnf_image_id }
         flavor: { get_input: target_vnf_flavor_id }
-      management_network_name: { get_property: [network, resource_id] }
+      management_network_name: { get_property: [management_plane_network, resource_id] }
     relationships:
       - target: keypair
         type: cloudify.openstack.server_connected_to_keypair
@@ -146,7 +146,7 @@ node_templates:
       server:
         image: { get_input: reference_vnf_image_id }
         flavor: { get_input: reference_vnf_flavor_id }
-      management_network_name: { get_property: [network, resource_id] }
+      management_network_name: { get_property: [management_plane_network, resource_id] }
     relationships:
       - target: keypair
         type: cloudify.openstack.server_connected_to_keypair
@@ -169,9 +169,9 @@ node_templates:
       resource_id: { get_input: target_vnf_port_name }
     relationships:
       - type: cloudify.relationships.contained_in
-        target: network
+        target: management_plane_network
       - type: cloudify.relationships.depends_on
-        target: subnet
+        target: management_plane_subnet
       - type: cloudify.openstack.port_connected_to_security_group
         target: security_group
       - target: target_vnf_ip
@@ -184,9 +184,9 @@ node_templates:
       resource_id: { get_input: reference_vnf_port_name }
     relationships:
       - type: cloudify.relationships.contained_in
-        target: network
+        target: management_plane_network
       - type: cloudify.relationships.depends_on
-        target: subnet
+        target: management_plane_subnet
       - type: cloudify.openstack.port_connected_to_security_group
         target: security_group
       - target: reference_vnf_ip
@@ -227,26 +227,26 @@ node_templates:
         description: Security group for vnf test
       rules:
         - port: 22
-          remote_ip_prefix: { get_property: [subnet, subnet, cidr] }
+          remote_ip_prefix: { get_property: [management_plane_subnet, subnet, cidr] }
 
-  subnet:
+  management_plane_subnet:
     type: cloudify.openstack.nodes.Subnet
     properties:
-      resource_id: { get_input: subnet_name }
+      resource_id: { get_input: management_plane_subnet_name }
       subnet:
         ip_version: 4
         cidr: 10.67.79.0/24
       openstack_config: *openstack_configuration
     relationships:
-      - target: network
+      - target: management_plane_network
         type: cloudify.relationships.contained_in
       - target: router
         type: cloudify.openstack.subnet_connected_to_router
 
-  network:
+  management_plane_network:
     type: cloudify.openstack.nodes.Network
     properties:
-      resource_id: { get_input: network_name }
+      resource_id: { get_input: management_plane_network_name }
       openstack_config: *openstack_configuration
 
   data_plane_subnet:
@@ -302,6 +302,6 @@ outputs:
   network:
     description: Network info
     value:
-      management_plane_network_name: { get_property: [ network, resource_id ] }
+      management_plane_network_name: { get_property: [ management_plane_network, resource_id ] }
       data_plane_network_name: { get_property: [ data_plane_network, resource_id ] }
 
