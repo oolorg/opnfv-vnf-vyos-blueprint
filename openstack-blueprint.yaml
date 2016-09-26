@@ -285,23 +285,23 @@ node_templates:
 
 outputs:
 
-  target_vnf:
-    description: Target VNF Connection Settings
+  vnfs:
+    description: Infomation of vnf.
     value:
-      target_vnf_host_ip: { get_attribute: [ target_vnf_ip, floating_ip_address ] }
-      target_vnf_host_public_key_path: { get_property: [ keypair, private_key_path ] }
-      target_vnf_host_name: { get_property: [ target_vnf_host, resource_id ] }
+      target_vnf:
+        vnf_name: { get_property: [ target_vnf_host, resource_id ] }
+        floating_ip: { get_attribute: [ target_vnf_ip, floating_ip_address ] }
+        public_key_path: { get_property: [ keypair, private_key_path ] }
 
-  reference_vnf:
-    description: Reference VNF Connection Settings
+      reference_vnf:
+        vnf_name: { get_property: [ reference_vnf_host, resource_id ] }
+        floating_ip: { get_attribute: [ reference_vnf_ip, floating_ip_address ] }
+        public_key_path: { get_property: [ keypair, private_key_path ] }
+
+  networks:
+    description: Infomation of network.
     value:
-      reference_vnf_host_ip: { get_attribute: [ reference_vnf_ip, floating_ip_address ] }
-      reference_vnf_host_public_key_path: { get_property: [ keypair, private_key_path ] }
-      reference_vnf_host_name: { get_property: [ reference_vnf_host, resource_id ] }
-
-  network:
-    description: Network info
-    value:
-      management_plane_network_name: { get_property: [ management_plane_network, resource_id ] }
-      data_plane_network_name: { get_property: [ data_plane_network, resource_id ] }
-
+      management_plane_network:
+        network_name: { get_property: [ management_plane_network, resource_id ] }
+      data_plane_network:
+        network_name: { get_property: [ data_plane_network, resource_id ] }
