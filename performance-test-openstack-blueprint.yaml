@@ -1,0 +1,431 @@
+tosca_definitions_version: cloudify_dsl_1_2
+
+description: >
+  This blueprint is deploy target_vnf send_side_testar_vm receive_side_testar_vm
+  management_network and send_side_traffic_plane_network receive_side_traffic_plane_network.
+
+imports:
+  - http://www.getcloudify.org/spec/cloudify/3.3/types.yaml
+  - http://www.getcloudify.org/spec/openstack-plugin/1.3/plugin.yaml
+
+inputs:
+  keystone_username:
+    type: string
+
+  keystone_password:
+    type: string
+
+  keystone_tenant_name:
+    type: string
+
+  keystone_url:
+    type: string
+
+  region:
+    type: string
+
+  external_network_name:
+    type: string
+
+  router_name:
+    type: string
+    default: vnf_test_router
+
+  management_plane_network_name:
+    type: string
+    default: management_plane_network
+
+  management_plane_subnet_name:
+    type: string
+    default: management_plane_subnet
+
+  send_side_traffic_plane_network_name:
+    type: string
+    default: send_side_traffic_plane_network
+
+  send_side_traffic_plane_subnet_name:
+    type: string
+    default: send_side_traffic_plane_subnet
+
+  receive_side_traffic_plane_network_name:
+    type: string
+    default: receive_side_traffic_plane_network
+
+  receive_side_traffic_plane_subnet_name:
+    type: string
+    default: receive_side_traffic_plane_subnet
+
+  target_vnf_port_name:
+    type: string
+    default: target_vnf_port
+
+  target_vnf_send_side_traffic_plane_port_name:
+    type: string
+    default: target_vnf_send_side_traffic_plane_port
+
+  target_vnf_receive_side_traffic_plane_port_name:
+    type: string
+    default: target_vnf_receive_side_traffic_plane_port
+
+  send_side_testar_vm_port_name:
+    type: string
+    default: send_side_testar_vm_port
+
+  send_side_testar_vm_send_side_traffic_plane_port_name:
+    type: string
+    default: send_side_testar_vm_send_side_traffic_plane_port
+
+  receive_side_testar_vm_port_name:
+    type: string
+    default: receive_side_testar_vm_port
+
+  receive_side_testar_vm_receive_side_traffic_plane_port_name:
+    type: string
+    default: receive_side_testar_vm_receive_side_traffic_plane_port
+
+  security_group_name:
+    type: string
+    default: vnf_test_security_group
+
+  keypair_name:
+    type: string
+    default: vnf_test_keypair
+
+  ssh_key_filename:
+    type: string
+    default: ~/.ssh/vnf_test_keypair.pem
+
+  use_existing_keypair:
+    type: boolean
+    default: false
+
+  target_vnf_name:
+    type: string
+    default: target_vnf
+
+  target_vnf_image_id:
+    type: string
+
+  target_vnf_flavor_id:
+    type: string
+
+  send_side_testar_vm_name:
+    type: string
+    default: send_side_testar_vm
+
+  send_side_testar_vm_image_id:
+    type: string
+
+  send_side_testar_vm_flavor_id:
+    type: string
+
+  receive_side_testar_vm_name:
+    type: string
+    default: receive_side_testar_vm
+
+  receive_side_testar_vm_image_id:
+    type: string
+
+  receive_side_testar_vm_flavor_id:
+    type: string
+
+dsl_definitions:
+  openstack_configuration: &openstack_configuration
+    username: { get_input: keystone_username }
+    password: { get_input: keystone_password }
+    tenant_name: { get_input: keystone_tenant_name }
+    auth_url: { get_input: keystone_url }
+    region: { get_input: region }
+
+node_templates:
+
+  target_vnf_ip:
+    type: cloudify.openstack.nodes.FloatingIP
+    properties:
+      floatingip:
+        floating_network_name: { get_input: external_network_name }
+      openstack_config: *openstack_configuration
+
+  send_side_testar_vm_ip:
+    type: cloudify.openstack.nodes.FloatingIP
+    properties:
+      floatingip:
+        floating_network_name: { get_input: external_network_name }
+      openstack_config: *openstack_configuration
+
+  receive_side_testar_vm_ip:
+    type: cloudify.openstack.nodes.FloatingIP
+    properties:
+      floatingip:
+        floating_network_name: { get_input: external_network_name }
+      openstack_config: *openstack_configuration
+
+  target_vnf_host:
+    type: cloudify.openstack.nodes.Server
+    properties:
+      openstack_config: *openstack_configuration
+      resource_id: { get_input: target_vnf_name }
+      install_agent: false
+      server:
+        image: { get_input: target_vnf_image_id }
+        flavor: { get_input: target_vnf_flavor_id }
+      management_network_name: { get_property: [management_plane_network, resource_id] }
+    relationships:
+      - target: target_vnf_port
+        type: cloudify.openstack.server_connected_to_port
+      - target: target_vnf_send_side_traffic_plane_port
+        type: cloudify.openstack.server_connected_to_port
+      - target: target_vnf_receive_side_traffic_plane_port
+        type: cloudify.openstack.server_connected_to_port
+
+  send_side_testar_vm_host:
+    type: cloudify.openstack.nodes.Server
+    properties:
+      openstack_config: *openstack_configuration
+      resource_id: { get_input: send_side_testar_vm_name }
+      install_agent: false
+      server:
+        image: { get_input: send_side_testar_vm_image_id }
+        flavor: { get_input: send_side_testar_vm_flavor_id }
+      management_network_name: { get_property: [management_plane_network, resource_id] }
+    relationships:
+      - target: send_side_testar_vm_port
+        type: cloudify.openstack.server_connected_to_port
+      - target: send_side_testar_vm_send_side_traffic_plane_port
+        type: cloudify.openstack.server_connected_to_port
+
+  receive_side_testar_vm_host:
+    type: cloudify.openstack.nodes.Server
+    properties:
+      openstack_config: *openstack_configuration
+      resource_id: { get_input: receive_side_testar_vm_name }
+      install_agent: false
+      server:
+        image: { get_input: receive_side_testar_vm_image_id }
+        flavor: { get_input: receive_side_testar_vm_flavor_id }
+      management_network_name: { get_property: [management_plane_network, resource_id] }
+    relationships:
+      - target: receive_side_testar_vm_port
+        type: cloudify.openstack.server_connected_to_port
+      - target: receive_side_testar_vm_receive_side_traffic_plane_port
+        type: cloudify.openstack.server_connected_to_port
+
+  keypair:
+    type: cloudify.openstack.nodes.KeyPair
+    properties:
+      use_external_resource: { get_input: use_existing_keypair }
+      resource_id: { get_input: keypair_name }
+      private_key_path: { get_input: ssh_key_filename }
+      openstack_config: *openstack_configuration
+
+  target_vnf_port:
+    type: cloudify.openstack.nodes.Port
+    properties:
+      openstack_config: *openstack_configuration
+      resource_id: { get_input: target_vnf_port_name }
+    relationships:
+      - type: cloudify.relationships.contained_in
+        target: management_plane_network
+      - type: cloudify.relationships.depends_on
+        target: management_plane_subnet
+      - type: cloudify.openstack.port_connected_to_security_group
+        target: security_group
+      - target: target_vnf_ip
+        type: cloudify.openstack.port_connected_to_floating_ip
+
+  send_side_testar_vm_port:
+    type: cloudify.openstack.nodes.Port
+    properties:
+      openstack_config: *openstack_configuration
+      resource_id: { get_input: send_side_testar_vm_port_name }
+    relationships:
+      - type: cloudify.relationships.contained_in
+        target: management_plane_network
+      - type: cloudify.relationships.depends_on
+        target: management_plane_subnet
+      - type: cloudify.openstack.port_connected_to_security_group
+        target: security_group
+      - target: send_side_testar_vm_ip
+        type: cloudify.openstack.port_connected_to_floating_ip
+
+  receive_side_testar_vm_port:
+    type: cloudify.openstack.nodes.Port
+    properties:
+      openstack_config: *openstack_configuration
+      resource_id: { get_input: receive_side_testar_vm_port_name }
+    relationships:
+      - type: cloudify.relationships.contained_in
+        target: management_plane_network
+      - type: cloudify.relationships.depends_on
+        target: management_plane_subnet
+      - type: cloudify.openstack.port_connected_to_security_group
+        target: security_group
+      - target: receive_side_testar_vm_ip
+        type: cloudify.openstack.port_connected_to_floating_ip
+
+  target_vnf_send_side_traffic_plane_port:
+    type: cloudify.openstack.nodes.Port
+    properties:
+      openstack_config: *openstack_configuration
+      resource_id: { get_input: target_vnf_send_side_traffic_plane_port_name }
+    relationships:
+      - type: cloudify.relationships.contained_in
+        target: send_side_traffic_plane_network
+      - type: cloudify.relationships.depends_on
+        target: send_side_traffic_plane_subnet
+      - type: cloudify.openstack.port_connected_to_security_group
+        target: security_group
+
+  target_vnf_receive_side_traffic_plane_port:
+    type: cloudify.openstack.nodes.Port
+    properties:
+      openstack_config: *openstack_configuration
+      resource_id: { get_input: target_vnf_receive_side_traffic_plane_port_name }
+    relationships:
+      - type: cloudify.relationships.contained_in
+        target: receive_side_traffic_plane_network
+      - type: cloudify.relationships.depends_on
+        target: receive_side_traffic_plane_subnet
+      - type: cloudify.openstack.port_connected_to_security_group
+        target: security_group
+
+  send_side_testar_vm_send_side_traffic_plane_port:
+    type: cloudify.openstack.nodes.Port
+    properties:
+      openstack_config: *openstack_configuration
+      resource_id: { get_input: send_side_testar_vm_send_side_traffic_plane_port_name }
+    relationships:
+      - type: cloudify.relationships.contained_in
+        target: send_side_traffic_plane_network
+      - type: cloudify.relationships.depends_on
+        target: send_side_traffic_plane_subnet
+      - type: cloudify.openstack.port_connected_to_security_group
+        target: security_group
+
+  receive_side_testar_vm_receive_side_traffic_plane_port:
+    type: cloudify.openstack.nodes.Port
+    properties:
+      openstack_config: *openstack_configuration
+      resource_id: { get_input: receive_side_testar_vm_receive_side_traffic_plane_port_name }
+    relationships:
+      - type: cloudify.relationships.contained_in
+        target: receive_side_traffic_plane_network
+      - type: cloudify.relationships.depends_on
+        target: receive_side_traffic_plane_subnet
+      - type: cloudify.openstack.port_connected_to_security_group
+        target: security_group
+
+  security_group:
+    type: cloudify.openstack.nodes.SecurityGroup
+    properties:
+      openstack_config: *openstack_configuration
+      resource_id: { get_input: security_group_name }
+      security_group:
+        description: Security group for vnf test
+      rules:
+        - port: 22
+          remote_ip_prefix: { get_property: [management_plane_subnet, subnet, cidr] }
+
+  management_plane_subnet:
+    type: cloudify.openstack.nodes.Subnet
+    properties:
+      resource_id: { get_input: management_plane_subnet_name }
+      subnet:
+        ip_version: 4
+        cidr: 11.0.0.0/24
+      openstack_config: *openstack_configuration
+    relationships:
+      - target: management_plane_network
+        type: cloudify.relationships.contained_in
+      - target: router
+        type: cloudify.openstack.subnet_connected_to_router
+
+  management_plane_network:
+    type: cloudify.openstack.nodes.Network
+    properties:
+      resource_id: { get_input: management_plane_network_name }
+      openstack_config: *openstack_configuration
+
+  send_side_traffic_plane_subnet:
+    type: cloudify.openstack.nodes.Subnet
+    properties:
+      resource_id: { get_input: send_side_traffic_plane_subnet_name }
+      subnet:
+        ip_version: 4
+        cidr: 192.168.2.0/24
+        gateway_ip: null
+      openstack_config: *openstack_configuration
+    relationships:
+      - target: send_side_traffic_plane_network
+        type: cloudify.relationships.contained_in
+
+  receive_side_traffic_plane_subnet:
+    type: cloudify.openstack.nodes.Subnet
+    properties:
+      resource_id: { get_input: receive_side_traffic_plane_subnet_name }
+      subnet:
+        ip_version: 4
+        cidr: 192.168.3.0/24
+        gateway_ip: null
+      openstack_config: *openstack_configuration
+    relationships:
+      - target: receive_side_traffic_plane_network
+        type: cloudify.relationships.contained_in
+
+  send_side_traffic_plane_network:
+    type: cloudify.openstack.nodes.Network
+    properties:
+      resource_id: { get_input: send_side_traffic_plane_network_name }
+      openstack_config: *openstack_configuration
+
+  receive_side_traffic_plane_network:
+    type: cloudify.openstack.nodes.Network
+    properties:
+      resource_id: { get_input: receive_side_traffic_plane_network_name }
+      openstack_config: *openstack_configuration
+
+
+  router:
+    type: cloudify.openstack.nodes.Router
+    properties:
+      resource_id: { get_input: router_name }
+      openstack_config: *openstack_configuration
+    relationships:
+      - target: external_network
+        type: cloudify.relationships.connected_to
+
+  external_network:
+    type: cloudify.openstack.nodes.Network
+    properties:
+      use_external_resource: true
+      resource_id: { get_input: external_network_name }
+      openstack_config: *openstack_configuration
+
+outputs:
+
+  vnfs:
+    description: Infomation of vnf.
+    value:
+      target_vnf:
+        vnf_name: { get_property: [ target_vnf_host, resource_id ] }
+        floating_ip: { get_attribute: [ target_vnf_ip, floating_ip_address ] }
+        public_key_path: { get_property: [ keypair, private_key_path ] }
+      send_side_testar_vm:
+        vnf_name: { get_property: [ send_side_testar_vm_host, resource_id ] }
+        floating_ip: { get_attribute: [ send_side_testar_vm_ip, floating_ip_address ] }
+        public_key_path: { get_property: [ keypair, private_key_path ] }
+      receive_side_testar_vm:
+        vnf_name: { get_property: [ receive_side_testar_vm_host, resource_id ] }
+        floating_ip: { get_attribute: [ receive_side_testar_vm_ip, floating_ip_address ] }
+        public_key_path: { get_property: [ keypair, private_key_path ] }
+
+  networks:
+    description: Infomation of network.
+    value:
+      management_plane_network:
+        network_name: { get_property: [ management_plane_network, resource_id ] }
+      send_side_traffic_plane_network:
+        network_name: { get_property: [ send_side_traffic_plane_network, resource_id ] }
+      receive_side_traffic_plane_network:
+        network_name: { get_property: [ receive_side_traffic_plane_network, resource_id ] }
+
