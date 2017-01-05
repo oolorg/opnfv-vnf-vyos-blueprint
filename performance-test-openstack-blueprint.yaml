@@ -424,8 +424,10 @@ outputs:
     value:
       management_plane_network:
         network_name: { get_property: [ management_plane_network, resource_id ] }
+        subnet_info: { get_property: [ management_plane_subnet, subnet ] }
       send_data_plane_network:
         network_name: { get_property: [ send_data_plane_network, resource_id ] }
+        subnet_info: { get_property: [ send_data_plane_subnet, subnet ] }
       receive_data_plane_network:
         network_name: { get_property: [ receive_data_plane_network, resource_id ] }
-
+        subnet_info: { get_property: [ receive_data_plane_subnet, subnet ] }
