@@ -227,7 +227,20 @@ node_templates:
         description: Security group for vnf test
       rules:
         - port: 22
-          remote_ip_prefix: { get_property: [management_plane_subnet, subnet, cidr] }
+          remote_ip_prefix: 0.0.0.0/0
+        - protocol: icmp
+          port_range_min: 0
+          port_range_max: 0
+          remote_ip_prefix: 0.0.0.0/0
+        - protocol: tcp
+          port_range_min: 1
+          port_range_max: 65535
+          remote_ip_prefix: 0.0.0.0/0
+        - protocol: udp
+          port_range_min: 1
+          port_range_max: 65535
+          remote_ip_prefix: 0.0.0.0/0
+
 
   management_plane_subnet:
     type: cloudify.openstack.nodes.Subnet
