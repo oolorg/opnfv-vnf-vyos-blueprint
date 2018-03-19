@@ -105,7 +105,7 @@ dsl_definitions:
   openstack_configuration: &openstack_configuration
     username: { get_input: keystone_username }
     password: { get_input: keystone_password }
-    tenant_name: { get_input: keystone_tenant_name }
+    project_name: { get_input: keystone_tenant_name }
     user_domain_name: { get_input: keystone_user_domain_name }
     project_domain_name: { get_input: keystone_project_domain_name }
     auth_url: { get_input: keystone_url }
