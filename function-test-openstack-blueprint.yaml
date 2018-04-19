@@ -142,9 +142,8 @@ node_templates:
       openstack_config: *openstack_configuration
       resource_id: { get_input: target_vnf_name }
       install_agent: false
-      server:
-        image: { get_input: target_vnf_image_id }
-        flavor: { get_input: target_vnf_flavor_id }
+      image: { get_input: target_vnf_image_id }
+      flavor: { get_input: target_vnf_flavor_id }
       management_network_name: { get_property: [management_plane_network, resource_id] }
     relationships:
       - target: keypair
@@ -160,9 +159,8 @@ node_templates:
       openstack_config: *openstack_configuration
       resource_id: { get_input: reference_vnf_name }
       install_agent: false
-      server:
-        image: { get_input: reference_vnf_image_id }
-        flavor: { get_input: reference_vnf_flavor_id }
+      image: { get_input: reference_vnf_image_id }
+      flavor: { get_input: reference_vnf_flavor_id }
       management_network_name: { get_property: [management_plane_network, resource_id] }
     relationships:
       - target: keypair
